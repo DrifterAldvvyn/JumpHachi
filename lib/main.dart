@@ -390,6 +390,10 @@ class Player extends SpriteComponent with HasGameRef<MyPlatformGame> {
 
   @override
   void render(Canvas canvas) {
+    if (facing == 1.0) {
+      canvas.translate(size.x, 0); // Move origin to the right edge
+      canvas.scale(-1, 1); // Flip horizontally
+    }
     super.render(canvas);
     final paint = Paint()..color = Colors.red;
     // canvas.drawRect(size.toRect(), paint);
