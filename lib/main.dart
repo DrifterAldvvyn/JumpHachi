@@ -23,6 +23,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+      fontFamily: 'BaksoSapi',
+      ),
       home: Scaffold(
         // Use a Stack to overlay the timer, game view, controls, and winning overlay.
         body: Stack(
@@ -72,7 +75,7 @@ class MyApp extends StatelessWidget {
                 builder: (context, value, child) {
                   return Text(
                     "Time: ${value.toStringAsFixed(1)}",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    style: TextStyle(fontSize: 20, color: Colors.black),
                   );
                 },
               ),
