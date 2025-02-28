@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   flame: ^1.0.0
+  flame_audio: ^2.10.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -52,16 +53,20 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/background.jpeg
+    - assets/images/hachi.png
+    - assets/images/hachi_charge.png
+    - assets/images/chii_roll.png
+    - assets/images/won.png
+    - assets/audio/hachi_jump.mp3
+    - assets/audio/won_music.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -2,9 +2,19 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 void main() {
   runApp(MyApp());
+}
+
+class BackgroundComponent extends SpriteComponent with HasGameRef<MyPlatformGame>{
+  @override
+  Future<void> onLoad() async {
+    sprite = await Sprite.load('background.jpeg');
+    size = gameRef.size;
+    priority = -1; // Ensures the background is behind all other components.
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -28,6 +38,8 @@ class MyApp extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Image.asset('assets/images/won.png', width: 200),
+                          SizedBox(height: 20),
                           Text(
                             "Congratulation!",
                             style: TextStyle(fontSize: 40, color: Colors.white),
@@ -142,6 +154,7 @@ class MyPlatformGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    add(BackgroundComponent());
     // Reset timer and game state.
     gameTime = 0.0;
     finishTime = 0.0;
@@ -250,7 +263,7 @@ class MyPlatformGame extends FlameGame {
   }
 }
 
-class Player extends PositionComponent with HasGameRef<MyPlatformGame> {
+class Player extends SpriteComponent with HasGameRef<MyPlatformGame> {
   Vector2 velocity = Vector2.zero();
   double gravity = 600;
   double jumpCharge = 0;
@@ -258,10 +271,23 @@ class Player extends PositionComponent with HasGameRef<MyPlatformGame> {
   double facing = 1.0;
   bool charging = false;
   bool isOnGroundOrPlatform = false;
+  late Sprite normalSprite;
+  late Sprite chargeSprite;
+
+  @override
+  Future<void> onLoad() async {
+    // Load both sprites.
+    normalSprite = await Sprite.load('hachi.png');
+    chargeSprite = await Sprite.load('hachi_charge.png');
+    sprite = normalSprite;
+    size = Vector2(50, 50);
+  }
 
   @override
   void update(double dt) {
     super.update(dt);
+    // Update sprite based on charging status.
+    sprite = charging ? chargeSprite : normalSprite;
     // Charge jump if applicable.
     if (charging) {
       jumpCharge += dt;
@@ -297,6 +323,8 @@ class Player extends PositionComponent with HasGameRef<MyPlatformGame> {
             gameRef.gameOver = true;
             gameRef.finishTime = gameRef.gameTime;
             gameRef.overlays.add('CongratulationOverlay');
+
+            FlameAudio.play('won_music.mp3');
           }
         }
         // Hitting the bottom of the platform.
@@ -327,10 +355,10 @@ class Player extends PositionComponent with HasGameRef<MyPlatformGame> {
     // Bounce off screen edges.
     if (position.x < 0) {
       position.x = 0;
-      velocity.x = -velocity.x * 0.5;
+      velocity.x = -velocity.x * 0.75;
     } else if (position.x + size.x > gameRef.size.x) {
       position.x = gameRef.size.x - size.x;
-      velocity.x = -velocity.x * 0.5;
+      velocity.x = -velocity.x * 0.75;
     }
   }
 
@@ -351,10 +379,12 @@ class Player extends PositionComponent with HasGameRef<MyPlatformGame> {
     if (charging && isOnGroundOrPlatform) {
       double jumpStrength = 300 + (jumpCharge / maxJumpCharge) * 300;
       velocity.y = -jumpStrength;
-      velocity.x = 200 * facing;
+      velocity.x = 150 * facing;
       charging = false;
       jumpCharge = 0;
       isOnGroundOrPlatform = false;
+
+      FlameAudio.play('hachi_jump.mp3');
     }
   }
 
@@ -362,7 +392,7 @@ class Player extends PositionComponent with HasGameRef<MyPlatformGame> {
   void render(Canvas canvas) {
     super.render(canvas);
     final paint = Paint()..color = Colors.red;
-    canvas.drawRect(size.toRect(), paint);
+    // canvas.drawRect(size.toRect(), paint);
   }
 }
 
@@ -375,10 +405,32 @@ class PlatformComponent extends PositionComponent {
   }
 }
 
-class GoalPlatformComponent extends PlatformComponent {
+class GoalPlatformComponent extends PlatformComponent with HasGameRef<MyPlatformGame> {
+  late Sprite goalSprite;
+  
+@override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    // Load the goal sprite.
+    goalSprite = await Sprite.load('chii_roll.png');
+  }
+
   @override
   void render(Canvas canvas) {
     final paint = Paint()..color = Colors.yellow;
     canvas.drawRect(size.toRect(), paint);
+
+    // Draw the goal sprite slightly above the platform.
+    // For instance, we can draw it centered horizontally and a bit above.
+    // Adjust the offset and size as needed.
+    final double spriteWidth = size.x;
+    final double spriteHeight = size.y * 2.6; // slightly larger than the platform height
+    final Rect dstRect = Rect.fromLTWH(
+      0,
+      -spriteHeight - 1, // 5 pixels gap above the platform
+      spriteWidth,
+      spriteHeight,
+    );
+    goalSprite.renderRect(canvas, dstRect);
   }
 }
